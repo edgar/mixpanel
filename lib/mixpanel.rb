@@ -1,4 +1,5 @@
-require 'mixpanel/tracker'
+require "mixpanel/tracker"
+require "mixpanel/version"
 
 module Mixpanel
   def self.new(token, env, async = false)

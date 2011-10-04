@@ -9,6 +9,7 @@ module Mixpanel
     def initialize(token, env, async = false)
       @token = token
       @env = env
+      @env["MIXPANEL_ENABLED"] = true
       @async = async
       clear_queue
     end

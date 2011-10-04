@@ -26,6 +26,20 @@ class DummyApp
   end
 end
 
+class DummyAppWithFilter
+  def initialize(options)
+    @response_with = {}
+    @response_with[:status] = options[:status] || "200"
+    @response_with[:headers] = options[:headers] || {}
+    @response_with[:body] = options[:body] || ""
+  end
+
+  def call(env)
+    env["MIXPANEL_ENABLED"] = true
+    [@response_with[:status], @response_with[:headers], [@response_with[:body]]]
+  end
+end
+
 def large_script
   <<-EOT
     <script type='text/javascript'>

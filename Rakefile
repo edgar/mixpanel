@@ -1,9 +1,8 @@
-require 'spec/rake/spectask'
+require "bundler/gem_tasks"
 
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new('spec')
+
+# If you want to make this the default task
 task :default => :spec
-
-desc "Run all examples"
-Spec::Rake::SpecTask.new('spec') do |t|
-  t.spec_opts = ["-u -c -fs"]
-  t.spec_files = FileList['spec/**/*_spec.rb']
-end

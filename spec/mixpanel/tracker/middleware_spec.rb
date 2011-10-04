@@ -72,6 +72,47 @@ describe Mixpanel::Tracker::Middleware do
         last_response.headers["Content-Length"].should_not == html_document.length.to_s
       end
     end
+
+
+    describe "With regular requests and disable unless filter is on" do
+      before do
+        setup_rack_application(DummyApp, {:body => html_document, :headers => {"Content-Type" => "text/html"}}, {:async => true,:disable_unless_filter_is_on => true})
+        get "/"
+      end
+
+      it "should not add anything to the response" do
+        last_response.body.should == html_document
+      end
+    end
+
+    describe "With regular requests and disable unless filter is on and with a the filter" do
+      before do
+        setup_rack_application(DummyAppWithFilter, {:body => html_document, :headers => {"Content-Type" => "text/html"}}, {:async => true,:disable_unless_filter_is_on => true})
+        get "/"
+      end
+
+      it "should append mixpanel scripts to head element" do
+        Nokogiri::HTML(last_response.body).search('head script').should_not be_empty
+        Nokogiri::HTML(last_response.body).search('body script').should be_empty
+      end
+
+      it "should have 1 included script" do
+        Nokogiri::HTML(last_response.body).search('script').size.should == 1
+      end
+
+      it "should use the specified token instantiating mixpanel lib" do
+        last_response.should =~ /mpq.push\(\["init", "#{MIX_PANEL_TOKEN}"\]\)/
+      end
+
+      it "should define Content-Length if not exist" do
+        last_response.headers.has_key?("Content-Length").should == true
+      end
+
+      it "should update Content-Length in headers" do
+        last_response.headers["Content-Length"].should_not == html_document.length.to_s
+      end
+    end
+
   end
 
   describe "Appending mixpanel scripts" do
@@ -132,6 +173,47 @@ describe Mixpanel::Tracker::Middleware do
         last_response.headers["Content-Length"].should_not == html_document.length.to_s
       end
     end
+
+
+    describe "With regular requests and disable unless filter is on" do
+      before do
+        setup_rack_application(DummyApp, {:body => html_document, :headers => {"Content-Type" => "text/html"}}, {:disable_unless_filter_is_on => true})
+        get "/"
+      end
+
+      it "should not add anything to the response" do
+        last_response.body.should == html_document
+      end
+    end
+
+    describe "With regular requests and disable unless filter is on and with a the filter" do
+      before do
+        setup_rack_application(DummyAppWithFilter, {:body => html_document, :headers => {"Content-Type" => "text/html"}}, {:disable_unless_filter_is_on => true})
+        get "/"
+      end
+
+      it "should append mixpanel scripts to head element" do
+        Nokogiri::HTML(last_response.body).search('head script').should_not be_empty
+        Nokogiri::HTML(last_response.body).search('body script').should be_empty
+      end
+
+      it "should have 2 included scripts" do
+        Nokogiri::HTML(last_response.body).search('script').size.should == 2
+      end
+
+      it "should use the specified token instantiating mixpanel lib" do
+        last_response.should =~ /new MixpanelLib\('#{MIX_PANEL_TOKEN}'\)/
+      end
+
+      it "should define Content-Length if not exist" do
+        last_response.headers.has_key?("Content-Length").should == true
+      end
+
+      it "should update Content-Length in headers" do
+        last_response.headers["Content-Length"].should_not == html_document.length.to_s
+      end
+    end
+
   end
 
   describe "Tracking async appended events" do

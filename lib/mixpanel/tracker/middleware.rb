@@ -6,6 +6,7 @@ module Mixpanel
       def initialize(app, mixpanel_token, options={})
         @app = app
         @token = mixpanel_token
+        @disable_unless_filter_is_on = options.delete(:disable_unless_filter_is_on)
         @options = {
           :async => false
         }.merge(options)
@@ -16,9 +17,11 @@ module Mixpanel
 
         @status, @headers, @response = @app.call(env)
 
-        update_response!
-        update_content_length!
-        delete_event_queue!
+        if mixpanel_enabled?
+          update_response!
+          update_content_length!
+          delete_event_queue!
+        end
 
         [@status, @headers, @response]
       end
@@ -39,6 +42,11 @@ module Mixpanel
             part.insert(0, render_event_tracking_scripts(false)) unless queue.empty?
           end
         end
+      end
+
+      def mixpanel_enabled?
+        return true unless @disable_unless_filter_is_on == true
+        @env.has_key?("MIXPANEL_ENABLED") && @env["MIXPANEL_ENABLED"] == true
       end
 
       def update_content_length!

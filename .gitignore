@@ -1,2 +1,4 @@
+*.gem
 .bundle
-mixpanel*.gem
+Gemfile.lock
+pkg/*
